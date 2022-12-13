@@ -31,7 +31,7 @@ class deviceController {
                 })
             }
 
-            return res.json( device )
+            return res.json({ device })
         } catch( e ) {
             next( ApiError.badRequest( ( e as Error ).message ))
         }
@@ -56,7 +56,7 @@ class deviceController {
         if ( brandId && typeId ) {
             devices = await Device.findAndCountAll( { where: { typeId, brandId }} )
         }
-        return res.json( devices )
+        return res.json({ devices })
 	}
 	async getOne( req: Request, res: Response ) {
         const { id } = req.params
@@ -64,7 +64,7 @@ class deviceController {
             where: { id },
             include: [{ model: DeviceInfo, as: 'info' }]
         })
-        return res.json( device )
+        return res.json({ device })
 	}
 }
 

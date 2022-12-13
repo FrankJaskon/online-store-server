@@ -5,11 +5,11 @@ class brandController {
 	async create( req: Request, res: Response ) {
 		const { name } = req.body
 		const brand = await Brand.create( { name } )
-		return res.json( brand )
+		return res.json({ brand })
 	}
 	async getAll( req: Request, res: Response ) {
 		const brands = await Brand.findAll()
-		return res.json( brands )
+		return res.json({ brands })
 	}
 }
 
