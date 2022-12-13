@@ -1,4 +1,4 @@
-class ApiError extends Error {
+export default class ApiError extends Error {
     status: number
     message: string
 
@@ -8,13 +8,13 @@ class ApiError extends Error {
         this.message = message
     }
 
-    static badRequest( message: string ) {
+    static badRequest( message: string ): ApiError {
         return new ApiError( 404, message )
     }
-    static internal( message: string ) {
+    static internal( message: string ): ApiError {
         return new ApiError( 500, message )
     }
-    static forbidden( message: string ) {
+    static forbidden( message: string ): ApiError {
         return new ApiError( 403, message )
     }
 }
