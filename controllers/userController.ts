@@ -1,14 +1,13 @@
 import { NextFunction, Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import ApiError from '../error/ApiError'
+import ApiError, { INCORRECT_DATA } from '../error/ApiError'
 import { User, Basket } from '../models/models'
 
 const generateJwt = ( id: number, email: string, role: string ) => {
-	return jwt.sign({ id, email, role }, process.env.SECRET_KEY as jwt.Secret, { expiresIn: '4h' })
+	const payload = new Object({ id, email, role })
+	return jwt.sign( payload, process.env.SECRET_KEY as jwt.Secret, { expiresIn: '4h' })
 }
-
-const INCORRECT_DATA: 'Email or password is incorrect' = 'Email or password is incorrect'
 
 class userController {
 	async registration( req: Request, res: Response, next: NextFunction ) {
@@ -31,17 +30,17 @@ class userController {
 		const { email, password } = req.body
 		const user: any = await User.findOne({ where: { email } })
 		if ( !user ) {
-			return next( ApiError.internal( INCORRECT_DATA ) )
+			return next( ApiError.badRequest( INCORRECT_DATA ) )
 		}
 		const comparePassword = bcrypt.compare( password, user.password )
 		if ( !comparePassword ) {
-			return next( ApiError.internal( INCORRECT_DATA ) )
+			return next( ApiError.badRequest( INCORRECT_DATA ) )
 		}
 		const token = generateJwt( user.id, user.email, user.role )
 		return res.json({ token })
 	}
 	async check( req: any, res: Response, next: NextFunction ) {
-		const token = generateJwt( req.id, req.email, req.role )
+		const token = generateJwt( req.user.id, req.user.email, req.user.role )
 		return res.json({ token })
 	}
 }

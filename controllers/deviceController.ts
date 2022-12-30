@@ -33,37 +33,39 @@ class deviceController {
 
             return res.json({ device })
         } catch( e ) {
-            next( ApiError.badRequest( ( e as Error ).message ))
+            next( ApiError.badRequest(( e as Error ).message ))
         }
 	}
 	async getAll( req: Request, res: Response ) {
-        const { brandId, typeId } = req.query
-        let { page = 1, limit = 9 } = req.query
+        let { brandId, typeId, page = 1, limit = 40 } = req.query
         page = Number( page )
         limit = Number( limit )
         const offset: number = page * limit - limit
         let devices: any = []
 
         if ( !brandId && !typeId ) {
-            devices = await Device.findAndCountAll( { limit, offset } )
+            devices = await Device.findAndCountAll({ limit, offset })
         }
         if ( brandId && !typeId ) {
-            devices = await Device.findAndCountAll( { where: { brandId }, limit, offset } )
+            devices = await Device.findAndCountAll({ where: { brandId }, limit, offset })
         }
         if ( !brandId && typeId ) {
-            devices = await Device.findAndCountAll( { where: { typeId }} )
+            devices = await Device.findAndCountAll({ where: { typeId }, limit, offset })
         }
         if ( brandId && typeId ) {
-            devices = await Device.findAndCountAll( { where: { typeId, brandId }} )
+            devices = await Device.findAndCountAll({ where: { typeId, brandId }, limit, offset })
         }
         return res.json({ devices })
 	}
-	async getOne( req: Request, res: Response ) {
+	async getOne( req: Request, res: Response, next: NextFunction ) {
         const { id } = req.params
         const device = await Device.findOne({
             where: { id },
             include: [{ model: DeviceInfo, as: 'info' }]
         })
+        if ( !device ) {
+			return next( ApiError.badRequest( 'Device has not been found' ))
+		}
         return res.json({ device })
 	}
 }
