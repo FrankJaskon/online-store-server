@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import ApiError, { UNAUTHORIZED } from '../error/ApiError'
 
-export const checkToken = ( req: any, res: Response, next: NextFunction, role?: string ) => {
+export const checkToken = ( req: any, res: Response, next: NextFunction, role?: string | string[] ) => {
     if ( req.method === 'OPTIONS' ) {
         next()
     }
@@ -14,7 +14,7 @@ export const checkToken = ( req: any, res: Response, next: NextFunction, role?: 
         const decoded: any = jwt.verify( token, process.env.SECRET_KEY as jwt.Secret )
         req.user = decoded
         if ( role ) {
-            if ( decoded.role !== role ) {
+            if (( !Array.isArray( role ) && decoded.role !== role ) || !role?.includes( decoded.role )) {
                 return next( ApiError.forbidden( 'You do not have access' ) )
             }
         }

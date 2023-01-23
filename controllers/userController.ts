@@ -11,7 +11,7 @@ const generateJwt = ( id: number, email: string, role: string ) => {
 
 class userController {
 	async registration( req: Request, res: Response, next: NextFunction ) {
-		const { email, password, role } = req.body
+		const { email, password } = req.body
 		if ( !email || !password ) {
 			return next( ApiError.badRequest( INCORRECT_DATA ))
 		}
@@ -20,7 +20,7 @@ class userController {
 			return next( ApiError.badRequest( 'User with this Email already exists' ))
 		}
 		const hasPassword = await bcrypt.hash( password, 5 )
-		const user: any = await User.create({ email, role, password: hasPassword })
+		const user: any = await User.create({ email, password: hasPassword })
 		const basket = await Basket.create({ userId: user.id })
 		const token = generateJwt( user.id, user.email, user.role )
 
@@ -37,7 +37,7 @@ class userController {
 			return next( ApiError.badRequest( INCORRECT_DATA ) )
 		}
 		const token = generateJwt( user.id, user.email, user.role )
-		return res.json({ token })
+		return res.json({ token, id: user.id, role: user.role, email: user.email })
 	}
 	async check( req: any, res: Response, next: NextFunction ) {
 		const token = generateJwt( req.user.id, req.user.email, req.user.role )

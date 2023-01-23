@@ -1,27 +1,40 @@
 import { NextFunction, Request, Response } from 'express'
-import ApiError from '../error/ApiError'
+import ApiError, { SMTH_WENT_WRONG } from '../error/ApiError'
 import { Device, Rating } from '../models/models'
 
 const getAverageGrade = ( arr: [] ) => {
-	let average = 0;
+	let average = 0
 	arr.forEach(( item: any ) => {
-		average += item?.grade
+		average += item.grade
 	})
-	return average = Math.round( average / ( arr.length ) )
+	average = average / ( arr.length )
+	average = String( '' + average ).includes( '.' ) ? Number( average.toFixed( 1 )) : average
+	console.log( average )
+	return average
 }
 
 class ratingController {
-	async create( req: Request, res: Response, next: NextFunction ) {
-		const { userId, deviceId, grade } = req.body
-		if ( !deviceId || !userId ) {
-			return next( ApiError.badRequest( 'Something went wrong' ))
-		}
-		const userRating: any = await Rating.findOne({ where: { userId, deviceId } })
-		if ( userRating ) {
-			return next( ApiError.badRequest( 'You have already left your grade' ))
+	async create( req: any, res: Response, next: NextFunction ) {
+		let { deviceId, grade } = req.body
+		let { id: userId } = req.user
+		deviceId = Number( deviceId )
+		grade = Number( grade )
+		userId = Number( userId )
+		if ( !deviceId || !userId || !grade ) {
+			return next( ApiError.badRequest( SMTH_WENT_WRONG ))
 		}
 		if ( grade < 0 || grade > 10 ) {
 			return next( ApiError.badRequest( 'Rating is out of range' ))
+		}
+		const userRating: any = await Rating.findOne({ where: { userId, deviceId }})
+		if ( userRating ) {
+			const rating = await Rating.update({ grade }, { where: { userId, deviceId }})
+			const allRatings: any = await Rating.findAll({ where: { deviceId }})
+
+			const newRating = getAverageGrade( allRatings )
+
+			const device = await Device.update({ rating: newRating }, { where: { id: deviceId } })
+			return res.json({ newRating })
 		}
 		const rating = await Rating.create({ userId, deviceId, grade })
 		const allRatings: any = await Rating.findAll({ where: { deviceId }})
@@ -30,7 +43,7 @@ class ratingController {
 
 		const device = await Device.update({ rating: newRating }, { where: { id: deviceId } })
 
-		return res.json({ rating, newRating })
+		return res.json({ newRating })
 	}
 	// async getAll( req: Request, res: Response, next: NextFunction ) {
 	// 	const { deviceId } = req.query

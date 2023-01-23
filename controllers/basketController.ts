@@ -50,7 +50,7 @@ class basketController {
 
 		return res.json({ basketDevice })
 	}
-	async delete( req: any, res: Response, next: NextFunction ) {
+	async remove( req: any, res: Response, next: NextFunction ) {
 		let { deviceId } = req.body
 		let { id: userId } = req.user
 		deviceId = Number( deviceId )
