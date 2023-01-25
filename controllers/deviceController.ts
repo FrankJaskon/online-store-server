@@ -50,28 +50,41 @@ class deviceController {
                 fileName = v4() + ".jpg"
                 img.mv( path.resolve( __dirname, '..', 'static', fileName ))
                 device = await Device.update({ name, price, brandId, typeId, img: fileName }, { where: { id }})
+            } else {
+                device = await Device.update({ name, price, brandId, typeId }, { where: { id }})
             }
 
-            device = await Device.update({ name, price, brandId, typeId }, { where: { id }})
+            info = JSON.parse( info )
 
-            if ( info ) {
-                info = JSON.parse( info )
-                info.forEach( async ({ title, description, id }: InfoField ) => {
-                    const newInfo = await DeviceInfo.findOne({ where: { id }})
-                    if ( newInfo ) {
+            if ( info?.length ) {
+                let ids: number[] = []
+                const infos: any = await DeviceInfo.findAll({ where: { deviceId: id }})
+                for ( let i = 0; i < infos.length; i++ ) {
+                    ids.push( infos[ i ].id )
+                }
+                for ( let i = 0; i < info.length; i++ ) {
+                    ids = ids.filter( id =>  id !== info[ id ])
+                }
+                ids.length && await DeviceInfo.destroy({ where: { id: ids }})
+                info.forEach( async ({ title, description, id: infoId }: InfoField ) => {
+                    const oldInfo = await DeviceInfo.findOne({ where: { id: infoId }})
+                    if ( oldInfo ) {
                         DeviceInfo.update({
                             title,
                             description,
-                            deviceId: device.id
-                        }, { where: { id: Number( id )}})
+                            deviceId: id
+                        }, { where: { id: Number( infoId )}})
                     } else {
                         DeviceInfo.create({
                             title,
                             description,
-                            deviceId: device.id
+                            deviceId: id
                         })
                     }
                 })
+            } else {
+                // console.log( 'we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here' )
+                DeviceInfo.destroy({ where: { deviceId: id }})
             }
             return res.json({ device })
         } catch( e ) {
