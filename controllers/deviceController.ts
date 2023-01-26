@@ -83,7 +83,6 @@ class deviceController {
                     }
                 })
             } else {
-                // console.log( 'we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here we are here' )
                 DeviceInfo.destroy({ where: { deviceId: id }})
             }
             return res.json({ device })
@@ -91,46 +90,58 @@ class deviceController {
             next( ApiError.badRequest(( e as Error ).message ))
         }
 	}
-	async getAll( req: Request, res: Response ) {
-        let { brandId, typeId, page = 1, limit = 40, filterKey='name', filterOrder='ASC' } = req.query
-        page = Number( page )
-        limit = Number( limit )
-        const offset: number = page * limit - limit
-        let devices: any = []
-        const filter: any = [ filterKey, filterOrder ]
+	async getAll( req: Request, res: Response, next: NextFunction ) {
+        try {
+            let { brandId, typeId, page = 1, limit = 40, filterKey='name', filterOrder='ASC' } = req.query
+            page = Number( page )
+            limit = Number( limit )
+            const offset: number = page * limit - limit
+            let devices: any = []
+            const filter: any = [ filterKey, filterOrder ]
 
-        if ( !brandId && !typeId ) {
-            devices = await Device.findAndCountAll({ limit, offset, order: [ filter ] })
+            if ( !brandId && !typeId ) {
+                devices = await Device.findAndCountAll({ limit, offset, order: [ filter ] })
+            }
+            if ( brandId && !typeId ) {
+                devices = await Device.findAndCountAll({ where: { brandId }, limit, offset, order: [ filter ] })
+            }
+            if ( !brandId && typeId ) {
+                devices = await Device.findAndCountAll({ where: { typeId }, limit, offset, order: [ filter ] })
+            }
+            if ( brandId && typeId ) {
+                devices = await Device.findAndCountAll({ where: { typeId, brandId }, limit, offset, order: [ filter ] })
+            }
+            return res.json({ devices })
+        } catch( e ) {
+            next( ApiError.badRequest(( e as Error ).message ))
         }
-        if ( brandId && !typeId ) {
-            devices = await Device.findAndCountAll({ where: { brandId }, limit, offset, order: [ filter ] })
-        }
-        if ( !brandId && typeId ) {
-            devices = await Device.findAndCountAll({ where: { typeId }, limit, offset, order: [ filter ] })
-        }
-        if ( brandId && typeId ) {
-            devices = await Device.findAndCountAll({ where: { typeId, brandId }, limit, offset, order: [ filter ] })
-        }
-        return res.json({ devices })
 	}
 	async getOne( req: Request, res: Response, next: NextFunction ) {
-        const { id } = req.params
-        const device = await Device.findOne({
-            where: { id },
-            include: [{ model: DeviceInfo, as: 'info' }]
-        })
-        if ( !device ) {
-			return next( ApiError.badRequest( 'Device has not been found' ))
-		}
-        return res.json({ device })
+        try {
+            const { id } = req.params
+            const device = await Device.findOne({
+                where: { id },
+                include: [{ model: DeviceInfo, as: 'info' }]
+            })
+            if ( !device ) {
+                return next( ApiError.badRequest( 'Device has not been found' ))
+            }
+            return res.json({ device })
+        } catch( e ) {
+            next( ApiError.badRequest(( e as Error ).message ))
+        }
 	}
     async remove( req: any, res: Response, next: NextFunction ) {
-		let { id } = req.body
-		id = Number( id )
+		try {
+            let { id } = req.body
+            id = Number( id )
 
-		await Device.destroy({ where: { id }})
+            await Device.destroy({ where: { id }})
 
-		return res.json({ removed: true, message: 'Item has been removed' })
+            return res.json({ removed: true, message: 'Item has been removed' })
+        } catch( e ) {
+            next( ApiError.badRequest(( e as Error ).message ))
+        }
 	}
 }
 

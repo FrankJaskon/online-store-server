@@ -15,59 +15,75 @@ const findAndCountAllDevices = async ( basketId: number ) => {
 
 class basketController {
 	async create( req: any, res: Response, next: NextFunction ) {
-		let { deviceId } = req.body
-		let { id: userId } = req.user
-		deviceId = Number( deviceId )
-		userId = Number( userId )
+		try {
+			let { deviceId } = req.body
+			let { id: userId } = req.user
+			deviceId = Number( deviceId )
+			userId = Number( userId )
 
-		const basket: any = await Basket.findOne({ where: { userId }})
-		const basketDevice: any = await BasketDevice.create({ basketId: basket.id, deviceId })
+			const basket: any = await Basket.findOne({ where: { userId }})
+			const basketDevice: any = await BasketDevice.create({ basketId: basket.id, deviceId })
 
-		return res.json({ basketDevice })
+			return res.json({ basketDevice })
+		} catch( e ) {
+			next( ApiError.badRequest(( e as Error ).message ))
+		}
 	}
 	async update( req: any, res: Response, next: NextFunction ) {
-		let { deviceId, increment, decrement } = req.body
-		let { id: userId } = req.user
-		deviceId = Number( deviceId )
-		userId = Number( userId )
+		try {
+			let { deviceId, increment, decrement } = req.body
+			let { id: userId } = req.user
+			deviceId = Number( deviceId )
+			userId = Number( userId )
 
-		const device: any = await BasketDevice.findOne({ where: { deviceId }})
+			const device: any = await BasketDevice.findOne({ where: { deviceId }})
 
-		if ( decrement && device.count === 1 ) {
-			await BasketDevice.destroy({ where: { deviceId }})
-			return res.json({ removed: true, message: 'Item has been removed' })
+			if ( decrement && device.count === 1 ) {
+				await BasketDevice.destroy({ where: { deviceId }})
+				return res.json({ removed: true, message: 'Item has been removed' })
+			}
+
+			if ( increment ) {
+				await BasketDevice.increment( 'count', { by: 1, where: { deviceId }})
+			} else if ( decrement ) {
+				await BasketDevice.decrement( 'count', { by: 1, where: { deviceId }})
+			} else {
+				return next( ApiError.badRequest( SMTH_WENT_WRONG ))
+			}
+
+			const basketDevice = await BasketDevice.findOne({ where: { deviceId }})
+
+			return res.json({ basketDevice })
+		} catch( e ) {
+			next( ApiError.badRequest(( e as Error ).message ))
 		}
-
-		if ( increment ) {
-			await BasketDevice.increment( 'count', { by: 1, where: { deviceId }})
-		} else if ( decrement ) {
-			await BasketDevice.decrement( 'count', { by: 1, where: { deviceId }})
-		} else {
-			return next( ApiError.badRequest( SMTH_WENT_WRONG ))
-		}
-
-		const basketDevice = await BasketDevice.findOne({ where: { deviceId }})
-
-		return res.json({ basketDevice })
 	}
 	async remove( req: any, res: Response, next: NextFunction ) {
-		let { deviceId } = req.body
-		let { id: userId } = req.user
-		deviceId = Number( deviceId )
-		userId = Number( userId )
+		try {
+			let { deviceId } = req.body
+			let { id: userId } = req.user
+			deviceId = Number( deviceId )
+			userId = Number( userId )
 
-		await BasketDevice.destroy({ where: { deviceId }})
+			await BasketDevice.destroy({ where: { deviceId }})
 
-		return res.json({ removed: true, message: 'Item has been removed' })
+			return res.json({ removed: true, message: 'Item has been removed' })
+		} catch( e ) {
+			next( ApiError.badRequest(( e as Error ).message ))
+		}
 	}
 	async getAll( req: any, res: Response, next: NextFunction ) {
-		const { id } = req?.user
-		if ( !id ) {
-			return next( ApiError.badRequest( SMTH_WENT_WRONG ))
+		try {
+			const { id } = req?.user
+			if ( !id ) {
+				return next( ApiError.badRequest( SMTH_WENT_WRONG ))
+			}
+			const basket: any = await Basket.findOne({ where: { userId: id }})
+			const devices = await findAndCountAllDevices( basket.id )
+			return res.json( devices )
+		} catch( e ) {
+			next( ApiError.badRequest(( e as Error ).message ))
 		}
-		const basket: any = await Basket.findOne({ where: { userId: id }})
-		const devices = await findAndCountAllDevices( basket.id )
-		return res.json( devices )
 	}
 }
 

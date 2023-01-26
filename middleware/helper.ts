@@ -11,7 +11,7 @@ export const checkToken = ( req: any, res: Response, next: NextFunction, role?: 
         if ( !token ) {
             return next( ApiError.unauthorized( UNAUTHORIZED ))
         }
-        const decoded: any = jwt.verify( token, process.env.SECRET_KEY as jwt.Secret )
+        const decoded: any = jwt.verify( token, process.env.JWT_ACCESS_SECRET as jwt.Secret )
         req.user = decoded
         if ( role ) {
             if (( !Array.isArray( role ) && decoded.role !== role ) || !role?.includes( decoded.role )) {
