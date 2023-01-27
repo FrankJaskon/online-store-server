@@ -2,6 +2,9 @@
 
 Pet-project of server side for some online store
 
+## Diagram
+![alt text](https://github.com/FrankJaskon/online-store-server/blob/main/online_store_diagram.drawio.jpg "Diagram")
+
 ## Technologies
 Project is created with:
 
@@ -32,6 +35,3 @@ Project is created with:
 - Error handler
 - Auth middleware
 - Role middleware
-
-## Diagram
-	
