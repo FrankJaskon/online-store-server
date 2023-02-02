@@ -7,7 +7,7 @@ export const User = sequelize.define( 'user', {
     password: { type: DataTypes.STRING, allowNull: false },
     role: { type: DataTypes.STRING, defaultValue: 'USER' },
     isActivated: { type: DataTypes.BOOLEAN, defaultValue: false },
-    activatedLink: { type: DataTypes.STRING },
+    activationLink: { type: DataTypes.STRING },
 })
 
 export const Token = sequelize.define( 'token', {
