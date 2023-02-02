@@ -24,7 +24,8 @@ Project is created with:
 
 ## Features
 
-- Authorization by jwt token
+- Authorization by jwt tokens (access and refresh)
+- Account activation by an email
 - Support several roles 'USER' | 'ADMIN'
 - An opportunity to upload images on the server
 - An opportunity to add new users, types, brands, devices
