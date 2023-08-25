@@ -1,6 +1,6 @@
 ## General info
 
-Pet-project of server side for some online store
+Project focusing on the server side of an online store. This project aims to provide a backend solution for managing various aspects of an online store. It includes features such as JWT token-based authorization, email-based account activation, support for multiple user roles (USER and ADMIN), image uploading functionality, user and product management, shopping cart functionality, device rating capabilities, and seamless integration with a local PostgreSQL database. The project utilizes a variety of technologies listed in the Technologies section to achieve these functionalities.
 
 ## Diagram
 ![alt text](https://github.com/FrankJaskon/online-store-server/blob/main/online_store_diagram.drawio.jpg "Diagram")
